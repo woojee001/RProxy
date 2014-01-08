@@ -116,6 +116,7 @@ static cfg_opt_t       rule_opts[] = {
     CFG_BOOL("passthrough",                cfg_false,    CFGF_NONE),
     CFG_BOOL("allow-redirect",             cfg_false,    CFGF_NONE),
     CFG_STR_LIST("redirect-filter",        NULL,         CFGF_NODEFAULT),
+    CFG_SEC("logging",                     logging_opts, CFGF_NODEFAULT),
     CFG_END()
 };
 
@@ -830,6 +831,7 @@ headers_cfg_parse(cfg_t * cfg) {
 rule_cfg_t *
 rule_cfg_parse(cfg_t * cfg) {
     rule_cfg_t * rcfg;
+    cfg_t      * log_cfg;
     const char * rname;
     int          i;
 
@@ -910,6 +912,11 @@ rule_cfg_parse(cfg_t * cfg) {
                                    strlen(host_ent), free);
             assert(elem != NULL);
         }
+    }
+
+    if ((log_cfg = cfg_getsec(cfg, "logging"))) {
+        rule->req_log = logger_cfg_parse(log_cfg, "request");
+        rule->err_log = logger_cfg_parse(log_cfg, "error");
     }
 
     return rcfg;
